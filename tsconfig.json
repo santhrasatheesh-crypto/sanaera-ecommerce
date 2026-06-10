@@ -22,8 +22,7 @@
       "@/hooks/*": ["./src/hooks/*"],
       "@/types/*": ["./src/types/*"],
       "@/utils/*": ["./src/utils/*"],
-      "@/store/*": ["./src/store/*"],
-      "@/prisma/*": ["./prisma/*"]
+      "@/store/*": ["./src/store/*"]
     },
     "incremental": true,
     "plugins": [
