@@ -1,90 +1,114 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import Link from 'next/link'
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import Navbar from '@/components/Navigation/Navbar';
+import Footer from '@/components/Layout/Footer';
+import ProductCard from '@/components/Products/ProductCard';
+import { IProduct, ICategory } from '@/types';
 
-const mockProducts = [
-  { id: 1, name: 'Silk Saree', price: 5000, image: 'https://via.placeholder.com/300x400?text=Silk+Saree', occasion: 'Festive' },
-  { id: 2, name: 'Ethnic Kurti', price: 2500, image: 'https://via.placeholder.com/300x400?text=Ethnic+Kurti', occasion: 'Daily' },
-  { id: 3, name: 'Designer Lehenga', price: 8000, image: 'https://via.placeholder.com/300x400?text=Lehenga', occasion: 'Wedding' },
-  { id: 4, name: 'Cotton Fusion', price: 3000, image: 'https://via.placeholder.com/300x400?text=Fusion', occasion: 'Casual' },
-]
+export default function ShopPage() {
+  const searchParams = useSearchParams();
+  const [products, setProducts] = useState<IProduct[]>([]);
+  const [categories, setCategories] = useState<ICategory[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [priceRange, setPriceRange] = useState([0, 100000]);
 
-export default function Shop() {
-  const [filteredProducts] = useState(mockProducts)
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [productsRes, categoriesRes] = await Promise.all([
+          fetch(`/api/products?category=${selectedCategory}&minPrice=${priceRange[0]}&maxPrice=${priceRange[1]}`),
+          fetch('/api/categories'),
+        ]);
+
+        const productsData = await productsRes.json();
+        const categoriesData = await categoriesRes.json();
+
+        if (productsData.success) setProducts(productsData.data);
+        if (categoriesData.success) setCategories(categoriesData.data);
+      } catch (error) {
+        console.error('Failed to fetch data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [selectedCategory, priceRange]);
 
   return (
-    <div className="min-h-screen bg-cream">
-      <div className="bg-deep-espresso text-cream py-16 text-center">
-        <h1 className="text-5xl font-serif tracking-wider mb-4">SHOP COLLECTION</h1>
-        <p className="text-lg opacity-70">Discover our curated luxury fashion pieces</p>
-      </div>
+    <>
+      <Navbar />
 
-      <div className="max-w-7xl mx-auto px-6 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-          <div>
-            <h3 className="font-serif text-lg mb-4 text-merlot">OCCASION</h3>
-            <div className="space-y-2">
-              {['All', 'Festive', 'Daily', 'Wedding', 'Casual'].map(o => (
-                <label key={o} className="flex items-center">
-                  <input type="checkbox" className="mr-2" defaultChecked={o === 'All'} />
-                  <span className="text-sm">{o}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-          <div>
-            <h3 className="font-serif text-lg mb-4 text-merlot">PRICE</h3>
-            <input type="range" min="0" max="10000" className="w-full" />
-          </div>
-          <div>
-            <h3 className="font-serif text-lg mb-4 text-merlot">SIZE</h3>
-            <div className="space-y-2">
-              {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map(s => (
-                <label key={s} className="flex items-center">
-                  <input type="checkbox" className="mr-2" />
-                  <span className="text-sm">{s}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-          <div>
-            <h3 className="font-serif text-lg mb-4 text-merlot">FABRIC</h3>
-            <div className="space-y-2">
-              {['Silk', 'Cotton', 'Linen', 'Blend'].map(f => (
-                <label key={f} className="flex items-center">
-                  <input type="checkbox" className="mr-2" />
-                  <span className="text-sm">{f}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-        </div>
+      <div className="max-w-7xl mx-auto px-4 py-12">
+        <h1 className="text-5xl font-serif text-deep-espresso mb-12">Shop</h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {filteredProducts.map((product, idx) => (
-            <motion.div
-              key={product.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.1 }}
-              viewport={{ once: true }}
-            >
-              <Link href={`/product/${product.id}`}>
-                <div className="group cursor-pointer">
-                  <div className="bg-gray-200 rounded-lg overflow-hidden mb-4 h-80 relative">
-                    <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
-                  </div>
-                  <h3 className="font-serif text-lg text-merlot mb-2 group-hover:text-deep-espresso">{product.name}</h3>
-                  <p className="text-sm text-gray-600 mb-2">{product.occasion}</p>
-                  <p className="font-serif text-xl text-merlot">₹{product.price.toLocaleString()}</p>
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Sidebar Filters */}
+          <div className="lg:col-span-1">
+            <div className="space-y-8">
+              {/* Category Filter */}
+              <div>
+                <h3 className="font-serif font-bold text-deep-espresso mb-4">Categories</h3>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => setSelectedCategory('')}
+                    className={`block text-sm font-sans ${
+                      selectedCategory === '' ? 'text-merlot font-bold' : 'text-deep-espresso'
+                    }`}
+                  >
+                    All Categories
+                  </button>
+                  {categories.map((cat) => (
+                    <button
+                      key={cat.id}
+                      onClick={() => setSelectedCategory(cat.id)}
+                      className={`block text-sm font-sans ${
+                        selectedCategory === cat.id ? 'text-merlot font-bold' : 'text-deep-espresso'
+                      }`}
+                    >
+                      {cat.name}
+                    </button>
+                  ))}
                 </div>
-              </Link>
-            </motion.div>
-          ))}
+              </div>
+
+              {/* Price Filter */}
+              <div>
+                <h3 className="font-serif font-bold text-deep-espresso mb-4">Price Range</h3>
+                <input
+                  type="range"
+                  min="0"
+                  max="100000"
+                  value={priceRange[1]}
+                  onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
+                  className="w-full"
+                />
+                <p className="text-sm font-sans mt-2">₹0 - ₹{priceRange[1]}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Products Grid */}
+          <div className="lg:col-span-3">
+            {loading ? (
+              <div className="text-center py-20">Loading products...</div>
+            ) : products.length === 0 ? (
+              <div className="text-center py-20">No products found</div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {products.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  )
+
+      <Footer />
+    </>
+  );
 }
