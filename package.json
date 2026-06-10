@@ -4,14 +4,17 @@
   "description": "SANAÉRA - Luxury Fashion E-Commerce Platform",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "concurrently \"next dev\" \"node --loader ts-node/esm --watch prisma/seed.ts\"",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "type-check": "tsc --noEmit",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
+    "prisma:migrate:prod": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
-    "db:seed": "node --loader ts-node/esm prisma/seed.ts"
+    "db:seed": "node --loader ts-node/esm prisma/seed.ts",
+    "db:reset": "prisma migrate reset --skip-generate --skip-seed && npm run db:seed"
   },
   "dependencies": {
     "react": "^18.2.0",
@@ -24,18 +27,36 @@
     "postcss": "^8.4.0",
     "autoprefixer": "^10.4.0",
     "framer-motion": "^10.16.0",
-    "axios": "^1.5.0",
+    "axios": "^1.6.0",
     "bcryptjs": "^2.4.3",
-    "razorpay": "^2.8.0"
+    "razorpay": "^2.9.0",
+    "stripe": "^13.0.0",
+    "next-intl": "^3.0.0",
+    "zustand": "^4.4.0",
+    "react-icons": "^4.12.0",
+    "swiper": "^10.3.0",
+    "react-hot-toast": "^2.4.0",
+    "clsx": "^2.0.0",
+    "date-fns": "^2.30.0",
+    "jsonwebtoken": "^9.1.0",
+    "cookie": "^0.5.0",
+    "nodemailer": "^6.9.0",
+    "cloudinary": "^1.40.0",
+    "express-rate-limit": "^7.1.0",
+    "helmet": "^7.1.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "@types/node": "^20.0.0",
     "@types/bcryptjs": "^2.4.2",
+    "@types/jsonwebtoken": "^9.0.0",
+    "@types/cookie": "^0.5.0",
+    "@types/nodemailer": "^6.4.0",
     "eslint": "^8.50.0",
     "eslint-config-next": "^15.0.0",
     "prisma": "^5.7.0",
-    "ts-node": "^10.9.1"
+    "ts-node": "^10.9.1",
+    "concurrently": "^8.2.0"
   }
 }
